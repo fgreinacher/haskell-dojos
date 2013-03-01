@@ -3,32 +3,6 @@ module Main where
 	
 main :: IO ()
 main = putStrLn $ yahzeeKata
-
--- Yahzee --
-
-yahzeeKata :: String
-yahzeeKata = show $ score [6, 1, 1, 6, 6, 1] Sixes
-
-data Category = 
-	Ones | Twos | Threes | Fours | Fives | Sixes |
-	Chance | Yahtzee | Pair | TwoPairs |
-	ThreeOfAKind | FourOfAKind | SmallStraight | LargeStraight | FullHose
-	deriving (Eq, Show)
-
-score :: [Int] -> Category -> Int
-
-score roll Ones = sumRoll roll (==1)
-score roll Twos = sumRoll roll (==2)
-score roll Threes = sumRoll roll (==3)
-score roll Fours = sumRoll roll (==4)
-score roll Fives = sumRoll roll (==5)
-score roll Sixes = sumRoll roll (==6)
-
-score roll Chance = sumRoll roll (\x -> True)
-score roll Yahtzee = if(all (== (head roll)) (tail roll)) then 50 else 0
-
-sumRoll :: [Int] -> (Int -> Bool) -> Int
-sumRoll roll f = foldl (\acc x -> if(f x) then acc + x else acc) 0 roll
 	
 -- Number names --
 
