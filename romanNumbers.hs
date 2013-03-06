@@ -1,14 +1,3 @@
-  	
-module Main where
-	
-main :: IO ()
-main = putStrLn $ yahzeeKata
-	
--- Number names --
-
-romanNumberKata :: String
-romanNumberKata = (show romanNumber) ++ "\n" ++ (stringFromRomanNumber romanNumber)
-	where romanNumber = romanNumberFromInt 1234
 
 data RomanNumber = RomanNumber { 
 	thousands :: Int, 
@@ -45,31 +34,3 @@ stringFromPart offset num
 	| num == 9 = [chars !! offset, chars !! (offset + 2)]
 	
 	where chars = ['I', 'V', 'X', 'L', 'C', 'D', 'M']
-
--- Leap years --
-
-leapYearKata :: String
-leapYearKata = show $ areLeapYears [1900, 1996, 2000, 2001]
-
-areLeapYears :: [Int] -> [(Int, Bool)]
-areLeapYears xs = [(x, isLeapYear x)| x <- xs]
-
-isLeapYear :: Int -> Bool
-isLeapYear x = 
-	x `isDividableBy` 4 && (not (x `isDividableBy` 100) || x `isDividableBy` 400)
-
--- FizzBuzz --
-
-fizzBuzzKata :: String
-fizzBuzzKata = show $ map (fizzBuzzStr) [1..100]  
-
-isDividableBy :: Int -> Int -> Bool
-isDividableBy x y = (mod x y) == 0
-
-fizzBuzzStr :: Int -> String
-fizzBuzzStr x 
-	| x `isDividableBy` 15 	= "FizzBuzz"
-	| x `isDividableBy` 3 	= "Fizz"
-	| x `isDividableBy` 5 	= "Buzz"
-	| otherwise 			= show x
-	

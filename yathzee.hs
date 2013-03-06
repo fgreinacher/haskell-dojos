@@ -23,6 +23,12 @@ score roll Pair = scoreNOfAKind 2 roll
 score roll ThreeOfAKind = scoreNOfAKind 3 roll
 score roll FourOfAKind = scoreNOfAKind 4 roll
 
+score [1,2,3,4,5] SmallStraight = 15
+score _ SmallStraight = 0
+
+score [2,3,4,5,6] LargeStraight = 20
+score _ LargeStraight = 0
+
 scoreNOfAKind :: Int -> [Int] -> Int
 scoreNOfAKind n roll = maybe 0 (\x -> sumOfFirstN n x) firstGroup
 	where firstGroup = find (\x -> length x >= n) (sortedGroups roll)
