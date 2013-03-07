@@ -1,48 +1,31 @@
-import Data.List
+zeckendorfSum :: Int -> [Int]
+zeckendorfSum number = foldl (\acc x -> if(snd x) then (acc ++ [fst x]) else acc) [] (zeckendorfTuples number)
 
-zeckString :: Int -> String
-zeckString n = map (\x -> if(snd x) then '1' else '0') (done $ zeck n)
+zeckendorfBinary :: Int -> String
+zeckendorfBinary number = map 
+        (\x -> if(snd x) then '1' else '0')
+        (zeckendorfTuples number)
 
-zeck :: Int -> ZeckState
-zeck n = finalState (ZeckState n (fibsUpTo n) [])
-
-finalState :: ZeckState -> ZeckState
-finalState state 
-    | nextState' == state    = nextState'
-    | otherwise              = finalState nextState'
+zeckendorfTuples :: Int -> [(Int, Bool)]
+zeckendorfTuples number = third finalState
     where
-        nextState' = nextState state
+        third (_, _, c) = c
+        finalState = resolveState (number, (fibonacciNumbersUpTo number), [])
+        resolveState state@(rest, [], done) = state
+        resolveState (rest, (headOpen:tailOpen), done)
+            | headOpen <= rest   = resolveState $ (rest - headOpen, tailOpen, markDone True)
+            | otherwise          = resolveState $ (rest, tailOpen, markDone False)
+            where markDone val = done ++ [(headOpen, val)]
 
-data ZeckState = ZeckState { 
-    rest :: Int, 
-    open :: [Int],
-    done :: [(Int, Bool)] 
-} deriving (Show, Eq)
+fibonacciNumbersUpTo :: Int -> [Int]
+fibonacciNumbersUpTo upperBound = 
+    reverse $ 
+    takeWhile (upperBound >=) $ 
+    map fibonacciNumberAt [0..] 
 
-nextState :: ZeckState -> ZeckState
-nextState state
-    | null open'              = state
-    | (head open') <= rest'   = ZeckState (rest' - (head open')) (tail open') ((done') ++ [((head open'), True)])
-    | otherwise               = ZeckState rest' (tail open') ((done') ++ [((head open'), False)])
-    where 
-        rest' = (rest state)
-        open' = (open state)
-        done' = (done state)
-
-fits :: Int -> Int -> Bool
-fits number limit
-    | number > limit    = False
-    | otherwise         = True
-
-fibsUpTo :: Int -> [Int]
-fibsUpTo upperBound = reverse $ takeWhile (\x -> x <= upperBound) fibs
-
-fibs :: [Int]
-fibs = map fibAt [0..] 
-
-fibAt :: Int -> Int
-fibAt index 
+fibonacciNumberAt :: Int -> Int
+fibonacciNumberAt index 
     | index < 0     = error "index must no be negative"
     | index == 0    = 1
     | index == 1    = 2
-    | otherwise     = fibAt (index - 2) + fibAt (index - 1)
+    | otherwise     = fibonacciNumberAt (index - 2) + fibonacciNumberAt (index - 1)
