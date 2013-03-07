@@ -1,4 +1,4 @@
-{|-
+{-|
 Just as numbers can be represented in a positional
 notation as sums of multiples of the powers of ten
 (decimal) or two (binary); all the positive integers
