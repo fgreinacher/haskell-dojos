@@ -26,7 +26,7 @@ data Grid = Grid {
 
 data CellState = Alive | Dead deriving (Eq, Show)
 
-data Cell = Cell {
+data Cell = InvalidCell | Cell {
     row :: Int,
     column :: Int,
     state :: CellState
@@ -56,14 +56,15 @@ indexOfCell :: Grid -> Int -> Int -> Int
 indexOfCell grid row column = (row * (rowCount grid) + column)
 
 neighbors :: Grid -> Int -> Int -> [Maybe Cell]
-neighbors grid row column = filter (/= Nothing) [ cellAt grid (row-1) (column-1),
-                              cellAt grid (row)   (column-1),
-                              cellAt grid (row+1) (column-1),
-                              cellAt grid (row-1) (column),
-                              cellAt grid (row+1) (column),
-                              cellAt grid (row-1) (column+1),
-                              cellAt grid (row)   (column+1),
-                              cellAt grid (row+1) (column+1) ]
+neighbors grid row column = [maybe InvalidCell id n | n <- unfiltered, n /= Nothing]
+    where unfiltered = [ cellAt grid (row-1) (column-1),
+                                    cellAt grid (row)   (column-1),
+                                    cellAt grid (row+1) (column-1),
+                                    cellAt grid (row-1) (column),
+                                    cellAt grid (row+1) (column),
+                                    cellAt grid (row-1) (column+1),
+                                    cellAt grid (row)   (column+1),
+                                    cellAt grid (row+1) (column+1) ]
 
 countLivingNeigbors :: Grid -> Cell -> Int
 countLivingNeigbors grid cell = 0 --length $ filter (\x -> state x == Alive) $ neighbors grid cell
