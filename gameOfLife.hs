@@ -46,7 +46,8 @@ data Cell = InvalidCell | Cell {
 instance (Show Cell) where
     show (Cell row column Alive) = "*"
     show (Cell row column Dead) = "."
-   
+
+-- Creates a grid with the specified number of rows and columns.
 createGrid :: Int -> Int -> Grid
 createGrid rowCount columnCount
     | rowCount <= 0    = error "Row count must be greater than 0."
@@ -54,18 +55,21 @@ createGrid rowCount columnCount
     | otherwise        = Grid rowCount columnCount cells
     where cells = [ Cell row column Alive | row <- [0 .. rowCount - 1] , column <- [0 .. columnCount - 1] ]
      
+-- Propagates the specified grid to the next generation.
 propagateGrid :: Grid -> Grid
 propagateGrid grid = Grid (rowCount grid) (columnCount grid) propagatedCells
     where
         propagatedCells = map (propagateCell grid) (cells grid) 
-        
+
+-- Brings to specified cell to live.
 animateCell :: Grid -> Int -> Int -> Grid
 animateCell = setCellState Alive
 
+-- Kills the specified cell.
 killCell :: Grid -> Int -> Int -> Grid
 killCell = setCellState Dead
-    
--- Internals -- 
+
+-- Internal implementation:
 
 showGrid :: Grid -> String
 showGrid grid@(Grid rowCount columnCount cells) = showHeader ++ showBody
