@@ -16,6 +16,14 @@ next generation of the grid, follow these four rules:
    a live cell.
 -}
 
+module GameOfLife ( Grid, 
+                    CellState, 
+                    Cell, 
+                    createGrid, 
+                    propagateGrid, 
+                    animateCell, 
+                    killCell) where
+
 import Data.List
 
 data Grid = Grid {
@@ -23,6 +31,9 @@ data Grid = Grid {
     columnCount :: Int,
     cells :: [Cell]
 }
+
+instance (Show Grid) where
+    show = showGrid
 
 data CellState = Alive | Dead deriving (Eq, Show)
 
@@ -35,9 +46,26 @@ data Cell = InvalidCell | Cell {
 instance (Show Cell) where
     show (Cell row column Alive) = "*"
     show (Cell row column Dead) = "."
+   
+createGrid :: Int -> Int -> Grid
+createGrid rowCount columnCount
+    | rowCount <= 0    = error "Row count must be greater than 0."
+    | columnCount <= 0 = error "Column count must be greater than 0."
+    | otherwise        = Grid rowCount columnCount cells
+    where cells = [ Cell row column Alive | row <- [0 .. rowCount - 1] , column <- [0 .. columnCount - 1] ]
+     
+propagateGrid :: Grid -> Grid
+propagateGrid grid = Grid (rowCount grid) (columnCount grid) propagatedCells
+    where
+        propagatedCells = map (propagateCell grid) (cells grid) 
+        
+animateCell :: Grid -> Int -> Int -> Grid
+animateCell = setCellState Alive
 
-instance (Show Grid) where
-    show = showGrid
+killCell :: Grid -> Int -> Int -> Grid
+killCell = setCellState Dead
+    
+-- Internals -- 
 
 showGrid :: Grid -> String
 showGrid grid@(Grid rowCount columnCount cells) = showHeader ++ showBody
@@ -52,30 +80,27 @@ cellAt grid row column
     | isValidPosition grid row column   = Just $ (cells grid) !! indexOfCell grid row column
     | otherwise                         = Nothing
 
+isValidPosition :: Grid -> Int -> Int -> Bool
+isValidPosition grid row column
+    | row < 0 || row >= rowCount grid           = False
+    | column < 0 || column >= columnCount grid  = False
+    | otherwise                                 = True
+    
 indexOfCell :: Grid -> Int -> Int -> Int
 indexOfCell grid row column = (row * (rowCount grid) + column)
 
-neighbors :: Grid -> Int -> Int -> [Maybe Cell]
-neighbors grid row column = [maybe InvalidCell id n | n <- unfiltered, n /= Nothing]
-    where unfiltered = [ cellAt grid (row-1) (column-1),
-                                    cellAt grid (row)   (column-1),
-                                    cellAt grid (row+1) (column-1),
-                                    cellAt grid (row-1) (column),
-                                    cellAt grid (row+1) (column),
-                                    cellAt grid (row-1) (column+1),
-                                    cellAt grid (row)   (column+1),
-                                    cellAt grid (row+1) (column+1) ]
+neighbors :: Grid -> Int -> Int -> [Cell]
+neighbors grid row column = [maybe InvalidCell id n | n <- potentialNeighbors, n /= Nothing]
+    where potentialNeighbors = [ cellAt grid (row-1) (column-1), cellAt grid (row)   (column-1), cellAt grid (row+1) (column-1),
+                                 cellAt grid (row-1) (column), cellAt grid (row+1) (column),
+                                 cellAt grid (row-1) (column+1), cellAt grid (row)   (column+1), cellAt grid (row+1) (column+1) ]
 
 countLivingNeigbors :: Grid -> Cell -> Int
-countLivingNeigbors grid cell = 0 --length $ filter (\x -> state x == Alive) $ neighbors grid cell
+countLivingNeigbors grid (Cell row column _) = length $ filter (\x -> state x == Alive) $ neighbors grid row column
 
-nextGrid :: Grid -> Grid
-nextGrid grid = Grid (rowCount grid) (columnCount grid) nextCells
-    where
-        nextCells = map (nextCell grid) (cells grid) 
 
-nextCell :: Grid -> Cell -> Cell
-nextCell grid cell
+propagateCell :: Grid -> Cell -> Cell
+propagateCell grid cell
     | isAlive && livingNeighbors < 2    = cellInState Dead
     | isAlive && livingNeighbors > 3    = cellInState Dead
     | isDead && livingNeighbors == 3    = cellInState Alive
@@ -85,19 +110,9 @@ nextCell grid cell
         isAlive                = state cell == Alive 
         isDead                 = state cell /= Alive 
         livingNeighbors        = countLivingNeigbors grid cell
-
-isValidPosition :: Grid -> Int -> Int -> Bool
-isValidPosition grid row column
-    | row < 0 || row >= rowCount grid           = False
-    | column < 0 || column >= columnCount grid  = False
-    | otherwise                                 = True
-
-
-makeGrid :: Int -> Int -> Grid
-makeGrid rowCount columnCount
-     | rowCount <= 0    = error "Row count must be greater than 0."
-     | columnCount <= 0 = error "Column count must be greater than 0."
-     | otherwise        = Grid rowCount columnCount cells
-     where cells = [ Cell row column Alive | row <- [0 .. rowCount - 1] , column <- [0 .. columnCount - 1] ]
-     
-     
+          
+setCellState :: CellState -> Grid -> Int -> Int -> Grid
+setCellState state grid rowOfInterest columnOfInterest = Grid (rowCount grid) (columnCount grid) newCells
+    where newCells              = map (\x -> if isCellOfInterest x then newCellFrom x else x) (cells grid)
+          isCellOfInterest cell = (row cell) == rowOfInterest && (column cell) == columnOfInterest         
+          newCellFrom cell      = (Cell (row cell) (column cell) state)
