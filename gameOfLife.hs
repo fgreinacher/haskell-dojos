@@ -25,6 +25,7 @@ module GameOfLife ( Grid,
                     killCell) where
 
 import Data.List
+import Data.Maybe
 
 data Grid = Grid {
     rowCount :: Int,
@@ -37,7 +38,7 @@ instance (Show Grid) where
 
 data CellState = Alive | Dead deriving (Eq, Show)
 
-data Cell = InvalidCell | Cell {
+data Cell = Cell {
     row :: Int,
     column :: Int,
     state :: CellState
@@ -45,7 +46,7 @@ data Cell = InvalidCell | Cell {
 
 instance (Show Cell) where
     show (Cell row column Alive) = "*"
-    show (Cell row column Dead) = "."
+    show (Cell row column Dead) = "-"
 
 -- Creates a grid with the specified number of rows and columns.
 createGrid :: Int -> Int -> Grid
@@ -53,7 +54,7 @@ createGrid rowCount columnCount
     | rowCount <= 0    = error "Row count must be greater than 0."
     | columnCount <= 0 = error "Column count must be greater than 0."
     | otherwise        = Grid rowCount columnCount cells
-    where cells = [ Cell row column Alive | row <- [0 .. rowCount - 1] , column <- [0 .. columnCount - 1] ]
+    where cells = [ Cell row column Dead | row <- [0 .. rowCount - 1] , column <- [0 .. columnCount - 1] ]
      
 -- Propagates the specified grid to the next generation.
 propagateGrid :: Grid -> Grid
@@ -94,14 +95,13 @@ indexOfCell :: Grid -> Int -> Int -> Int
 indexOfCell grid row column = (row * (rowCount grid) + column)
 
 neighbors :: Grid -> Int -> Int -> [Cell]
-neighbors grid row column = [maybe InvalidCell id n | n <- potentialNeighbors, n /= Nothing]
+neighbors grid row column = [fromJust n | n <- potentialNeighbors, n /= Nothing]
     where potentialNeighbors = [ cellAt grid (row-1) (column-1), cellAt grid (row)   (column-1), cellAt grid (row+1) (column-1),
                                  cellAt grid (row-1) (column), cellAt grid (row+1) (column),
                                  cellAt grid (row-1) (column+1), cellAt grid (row)   (column+1), cellAt grid (row+1) (column+1) ]
 
 countLivingNeigbors :: Grid -> Cell -> Int
 countLivingNeigbors grid (Cell row column _) = length $ filter (\x -> state x == Alive) $ neighbors grid row column
-
 
 propagateCell :: Grid -> Cell -> Cell
 propagateCell grid cell
