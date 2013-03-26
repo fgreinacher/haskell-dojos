@@ -4,7 +4,7 @@ import Data.List
 data Category = 
 	Ones | Twos | Threes | Fours | Fives | Sixes |
 	Chance | Yahtzee | Pair | TwoPairs |
-	ThreeOfAKind | FourOfAKind | SmallStraight | LargeStraight | FullHose
+	ThreeOfAKind | FourOfAKind | SmallStraight | LargeStraight | FullHouse
 	deriving (Eq, Show)
 
 score :: [Int] -> Category -> Int
@@ -16,9 +16,11 @@ score roll Fours = sumRoll roll (==4)
 score roll Fives = sumRoll roll (==5)
 score roll Sixes = sumRoll roll (==6)
 
-score roll Chance = sumRoll roll (\x -> True)
-score roll Yahtzee = if(all (== (head roll)) (tail roll)) then 50 else 0
-
+score roll Chance = sum roll
+score roll Yahtzee 
+    | allEqual roll = 50 
+    | otherwise = 0
+    
 score roll Pair = scoreNOfAKind 2 roll
 score roll ThreeOfAKind = scoreNOfAKind 3 roll
 score roll FourOfAKind = scoreNOfAKind 4 roll
@@ -29,6 +31,18 @@ score _ SmallStraight = 0
 score [2,3,4,5,6] LargeStraight = 20
 score _ LargeStraight = 0
 
+score roll FullHouse = scoreSortedRoll (reverse . sort $ roll)
+
+allEqual :: (Eq a) => [a] -> Bool
+allEqual [] = True
+allEqual (x:[]) = True
+allEqual (x:xs) = all (==x) xs
+    
+scoreSortedRoll sortedRoll@(a:b:c:d:e:[])
+    | (a == b && c == d && d == e) = sum sortedRoll
+    | (a == b && b == c && d == e) = sum sortedRoll
+    | otherwise                    = 0
+        
 scoreNOfAKind :: Int -> [Int] -> Int
 scoreNOfAKind n roll = maybe 0 (\x -> sumOfFirstN n x) firstGroup
 	where firstGroup = find (\x -> length x >= n) (sortedGroups roll)
