@@ -1,10 +1,87 @@
+-- http://www.haskell.org/haskellwiki/99_questions/21_to_28
+
+-- 23
+-- Extract a given number of randomly selected elements from a list.
+-- Prelude System.Random>rnd_select "abcdefgh" 3 >>= putStrLn
+-- eda
+
+
+
+-- 22
+-- Create a list containing all integers within a given range.
+
+range :: Int -> Int -> [Int]
+range l h = [l..h]
+
+range' :: Int -> Int -> [Int]
+range' l h 
+     | l == h   = [l]
+     | l > h    = l : (range' (l - 1) h)
+     | l < h    = l : (range' (l + 1) h)
+
+-- 21
+-- Insert an element at a given position into a list.
+-- insertAt 'X' "abcd" 2
+-- "aXbcd"
+
+insertAt :: a -> [a] -> Int -> [a]
+insertAt x xs i
+    | i < 0             = error "i must be greater than or equal to zero"
+    | i > length xs    = error "i must be smaller than or equal to the length of the list"
+    | i == 0            = x : xs
+    | otherwise         = head xs : (insertAt x t (i-1)) 
+    where t = tail xs
+
+
 -- http://www.haskell.org/haskellwiki/99_questions/11_to_20
 
+-- 20
+-- Remove the K'th element from a list.
+
+removeAt :: [a] -> Int -> [a]
+removeAt l i
+    | i >= length l = error "i too big"
+    | i == 0        = t
+    | otherwise     = head l : (removeAt t (i-1)) 
+    where t = tail l
+
+-- 19
+-- Rotate a list N places to the left.
+-- Hint: Use the predefined functions length and (++).
+-- Examples in Haskell:
+-- 
+-- *Main> rotate ['a','b','c','d','e','f','g','h'] 3
+-- "defghabc" 
+-- *Main> rotate ['a','b','c','d','e','f','g','h'] (-2)
+-- "ghabcdef"
+
+rotate :: [a] -> Int -> [a]
+rotate [] _ = []
+rotate x 0 = x
+rotate x y
+  | y > 0 = rotate (tail x ++ [head x]) (y-1)
+  | otherwise = rotate (last x : init x) (y+1)
+
+-- 18
+-- Extract a slice from a list.
+-- Given two indices, i and k, the slice is the list containing the elements between the i'th and k'th element of the original list (both limits included). Start counting the elements with 1.
+-- Example in Haskell:
+-- *Main> slice ['a','b','c','d','e','f','g','h','i','k'] 3 7
+-- "cdefg"
+
+
+
+slice :: Int -> Int -> [a] -> [a]
+slice i k xs =
+    [fst x | x <- zip xs [1..], (snd x >= from) && (snd x <= to)]
+        where
+            from = min i k
+            to = max i k
 -- 17
 -- Split a list into two parts; the length of the first part is given.
 -- Do not use any predefined predicates.
 
-split :: Enum a => Int -> [a] -> ([a],[a])
+split :: Int -> [a] -> ([a],[a])
 split n xs 
     | n < 0         = error "n < 0"
     | n > length xs = error "n > length"
