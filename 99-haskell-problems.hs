@@ -1,11 +1,31 @@
+import System.Random
+import Data.List
+
 -- http://www.haskell.org/haskellwiki/99_questions/21_to_28
+
+-- 25
+-- Generate a random permutation of the elements of a list.
+
+randomPermutation :: [a] -> IO [a]
+randomPermutation xs = randomSelect xs (length xs)
+  
+-- 24
+-- Lotto: Draw N different random numbers from the set 1..M.
+
+randomRange :: Int -> Int -> IO [Int]
+randomRange num max = randomSelect [1..num] num
 
 -- 23
 -- Extract a given number of randomly selected elements from a list.
 -- Prelude System.Random>rnd_select "abcdefgh" 3 >>= putStrLn
 -- eda
 
-
+randomSelect :: [a] -> Int -> IO [a]
+randomSelect xs n = do
+    randomGen <- getStdGen
+    let indices = take n $ nub $ randomRs range randomGen
+        range = (0, (length xs - 1))
+    return $ map (xs !!) indices
 
 -- 22
 -- Create a list containing all integers within a given range.
